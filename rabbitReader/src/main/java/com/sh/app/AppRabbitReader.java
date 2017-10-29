@@ -8,7 +8,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.springframework.amqp.support.converter.JsonMessageConverter;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -20,7 +20,11 @@ import com.sh.listener.impl.ListenerCustomer;
 import com.sh.listener.impl.ListenerShop;
 
 
-
+/**
+ * 
+ * @author shoe011
+ *
+ */
 @ComponentScan("com.sh")
 @SpringBootApplication
 public class AppRabbitReader {
@@ -51,36 +55,69 @@ public class AppRabbitReader {
 		SpringApplication.run(AppRabbitReader.class, args);
 	}
 	
+	/**
+	 * 
+	 * @return Queue
+	 */
 	@Bean(name ="queueCustomer")
 	Queue queueCustomer() {
 		return new Queue(qCustomer, true);
 	}
-
+	
+	/**
+	 * 
+	 * @return TopicExchange
+	 */
 	@Bean(name="exchangeCustomer")
 	TopicExchange exchangeCustomer() {
 		return new TopicExchange(topicName);
 	}
-
+	/**
+	 * 
+	 * @param queueCustomer
+	 * @param exchangeCustomer
+	 * @return Binding
+	 */
 	@Bean(name="bindingCustomer")
 	Binding bindingCustomer(Queue queueCustomer, TopicExchange exchangeCustomer) {
 		return BindingBuilder.bind(queueCustomer).to(exchangeCustomer).with(qCustomer);
 	}
-	
+	/**
+	 * 
+	 * @return Queue
+	 */
 	@Bean(name="queueShop")
 	Queue queueShop() {
 		return new Queue(qShop, true);
 	}
-
+	
+	/**
+	 * 
+	 * @return TopicExchange
+	 */
 	@Bean(name="exchangeShop")
 	TopicExchange exchangeShop() {
 		return new TopicExchange(topicName);
 	}
-
+	
+	/**
+	 * 
+	 * @param queueShop
+	 * @param exchangeShop
+	 * @return Binding
+	 */
 	@Bean(name="bindingShop")
 	Binding bindingShop(Queue queueShop, TopicExchange exchangeShop) {
 		return BindingBuilder.bind(queueShop).to(exchangeShop).with(qShop);
 	}
-
+	
+	/**
+	 * ConnectionFactory configuration for read
+	 * @return ConnectionFactory
+	 * @see 
+	 * {@link org.springframework.amqp.rabbit.connection.ConnectionFactory}
+	 * {@link org.springframework.amqp.rabbit.connection.CachingConnectionFactory.CachingConnectionFactory}
+	 */
 	@Bean
 	public ConnectionFactory connectionFactory() {
 		CachingConnectionFactory connectionFactory = new CachingConnectionFactory(brokerUrl);
@@ -91,11 +128,21 @@ public class AppRabbitReader {
 		return connectionFactory;
 	}
 	
+	/**
+	 * JSON message converter
+	 * @return MessageConverter
+	 */
 	@Bean
 	public MessageConverter jsonMessageConverter() {
-		return new JsonMessageConverter();
+		return new Jackson2JsonMessageConverter();
 	}
 	
+	/**
+	 * Listener container for Customers
+	 * @param connectionFactory
+	 * @param listenerAdapterCustomer
+	 * @return SimpleMessageListenerContainer
+	 */
 	@Bean(name="containerCustomer")
 	SimpleMessageListenerContainer containerCustomer(ConnectionFactory connectionFactory,
 			MessageListenerAdapter listenerAdapterCustomer) {
@@ -107,7 +154,11 @@ public class AppRabbitReader {
 		return container;
 	}
 
-	
+	/**
+	 * Configuration of listener adapter for Customers
+	 * @param receiver
+	 * @return MessageListenerAdapter
+	 */
 	@Bean(name="listenerAdapterCustomer")
 	public MessageListenerAdapter listenerAdapterCustomer(ListenerCustomer receiver) {
 		MessageListenerAdapter msgAdapter = new MessageListenerAdapter(receiver);
@@ -116,7 +167,12 @@ public class AppRabbitReader {
 
 		return msgAdapter;
 	}
-	
+	/**
+	 * Listener container for Shops
+	 * @param connectionFactory
+	 * @param listenerAdapterShop
+	 * @return
+	 */
 	@Bean(name="containerShop")
 	SimpleMessageListenerContainer containerShop(ConnectionFactory connectionFactory,
 			MessageListenerAdapter listenerAdapterShop) {
@@ -127,7 +183,12 @@ public class AppRabbitReader {
 		container.setMessageListener(listenerAdapterShop);
 		return container;
 	}
-
+	
+	/**
+	 * Configuration of listener adapter for Shops
+	 * @param receiver
+	 * @return MessageListenerAdapter
+	 */
 	@Bean(name="listenerAdapterShop")
 	public MessageListenerAdapter listenerAdapterShop(ListenerShop receiver) {
 		MessageListenerAdapter msgAdapter = new MessageListenerAdapter(receiver);

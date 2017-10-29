@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.6.RELEASE</version>
+		<version>1.5.8.RELEASE</version>
 	</parent>
 	<dependencyManagement>
 		<dependencies>
@@ -48,18 +48,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.13</version>
-		</dependency>
-		<dependency>
 			<groupId>com.sh</groupId>
-  			<artifactId>rabbitBeanMessages</artifactId>
-   	 		<version>0.0.1</version>
+			<artifactId>rabbitBeanMessages</artifactId>
+			<version>0.0.1</version>
 		</dependency>
-		
-		
-		<!-- <dependency> <groupId>com.github.ulisesbocchio</groupId> <artifactId>jasypt-spring-boot-starter</artifactId>
+
+	
+
+
+		<!-- <dependency> <groupId>com.github.ulisesbocchio</groupId> <artifactId>jasypt-spring-boot-starter</artifactId> 
 			<version>1.12</version> </dependency> -->
 		<!-- TESTING -->
 		<dependency>

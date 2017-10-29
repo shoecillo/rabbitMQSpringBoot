@@ -9,7 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sh.listener.RabbitListener;
 import com.sh.messages.CustomerMsg;
 
-
+/**
+ * 
+ * @author shoe011
+ *
+ */
 @Component
 public class ListenerCustomer implements RabbitListener<CustomerMsg>{
 

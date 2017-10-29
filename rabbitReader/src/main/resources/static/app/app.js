@@ -28,14 +28,8 @@ mainApp.controller("receiverCtrl",["$scope","$timeout",function($scope,$timeout)
 			
 			if(vm.sessionData.maxMsg == vm.sessionData.numMsg )
 			{
-				if(vm.sessionData.backUp.length >0) 
-				{
-					vm.sessionData.backUp.concat(vm.results);
-				}
-				else
-				{
-					vm.sessionData.backUp=vm.results;
-				}
+				
+				vm.sessionData.backUp = vm.sessionData.backUp.concat(vm.results);
 				vm.results = [];
 				vm.sessionData.numMsg = vm.results.length;
 			}

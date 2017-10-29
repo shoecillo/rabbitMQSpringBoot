@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Notification SSE Exampler</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="css/bootstrap.min.css" rel="stylesheet" />
+	<link href="css/font-awesome.min.css" rel="stylesheet" />
+	<link href="css/master.css" rel="stylesheet" />
+	<link href="css/animations.css" rel="stylesheet" />
+</head>
+<body ng-app="rabbitReceptor">
+	<div class="container" ng-controller="receiverCtrl">
+		
+		<div class="row">
+			<div class="col-md-6" style="padding-top: 10px;border: solid thin white; border-radius: 4px;">
+				<p>Started Session at: {{sessionData.fmtSessionStart}}</p>
+				<p>Total Messages Received: {{sessionData.numMsg}}</p>
+				<p>Max Messages until backup: {{sessionData.maxMsg}}</p>
+				<p>Messages in backup: {{sessionData.backUp.length}}</p>
+			</div>
+			<div  class="col-md-6">
+				<span class="fa fa-database fa-4x" aria-hidden="true"></span>
+				<img alt="" src="img/banner.svg">
+			</div>
+		</div>
+		<div class="row" style="padding-top: 20px;">
+			<div class="col-md-6">
+				<i class="fa fa-bell fa-2x" ng-class="isAnimated ? 'animation-spin' : 'default-bell'" aria-hidden="true"></i><i ng-show="isAnimated">&nbsp;&nbsp;New Message Incoming!!!</i>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Customer name</th>
+							<th>Occupation</th>
+							<th>Description</th>
+							<th>Time Reception</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in results" ng-class="isAnimated && $first ? 'animation-fadeout' : 'default-row'">
+							<td>{{item.custName}}</td>
+							<td>{{item.custOccupation}}</td>
+							<td>{{item.description}}</td>
+							<td>{{item.timestamp}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		
+		
+	</div>
+	<!--  
+	<h1>Memory Observer</h1>
+
+	<h3>Name</h3>
+	<div id="name"></div>
+
+	<h3>Occupation</h3>
+	<div id="occ"></div>
+
+	<h3>Description</h3>
+	<div id="desc"></div>
+	-->
+	
+	<script type="text/javascript" src="jslib/angular.min.js"></script>
+	<script type="text/javascript" src="jslib/bootstrap.min.js"></script>
+	<script type="text/javascript" src="jslib/ui-bootstrap-tpls.js"></script>
+	<script type="text/javascript" src="jslib/moment-with-locales.min.js"></script>
+	<script type="text/javascript" src="jslib/underscore-min.js"></script>
+	
+	<script type="text/javascript" src="app/app.js"></script>
+
+</body>
+</html>

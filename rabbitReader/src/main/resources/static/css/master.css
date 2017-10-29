@@ -1,0 +1,91 @@
+body {
+	background-color: black;
+	color: white;
+}
+
+.table-hover > tbody > tr:hover {
+  background-color: #c0c0c0;
+  color: black;
+  cursor: pointer;
+}
+
+.celda {
+	padding: 10px;
+}
+
+.cellGrowSel
+{
+	background-color: #006400;
+}
+
+.list-group-item, .list-group-item-text
+{
+	background-color: transparent;
+	color: white;
+}
+
+a.list-group-item:hover
+{
+	background-color: transparent;
+}
+
+.bloques
+{
+	padding-top: 5px;
+	padding-bottom : 15px;
+	background-color: #556B2F;
+
+}
+.bloque-top
+{
+	padding-top: 5px;
+	padding-bottom : 5px;
+	background-color: #556B2F;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+}
+
+.bloque-bottom
+{
+	padding-top: 5px;
+	padding-bottom : 15px;
+	background-color: #556B2F;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+.carrito
+{
+	border: 2px solid;
+	border-color: #556B2F;
+	border-bottom-right-radius: 6px;
+	border-top-right-radius: 6px;
+}
+
+.progress 
+{
+	background-color: transparent;
+	border: thin solid;
+	border-color: #556B2F; 
+	border-radius: 5px;
+}
+
+.progress-bar
+{
+	text-align: center;	
+}
+
+.default-bell
+{
+	color: white;
+}
+
+.new-row
+{
+	background-color: #1E90FF;
+}
+
+.default-row
+{
+	background-color: transparent;
+}

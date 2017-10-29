@@ -7,7 +7,7 @@ import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.JsonMessageConverter;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -16,6 +16,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+
+/**
+ * 
+ * @author shoe011
+ *
+ */
 @ComponentScan("com.sh")
 @Configuration
 @SpringBootApplication
@@ -43,37 +49,73 @@ public class AppRabbitPublisher {
 
 		SpringApplication.run(AppRabbitPublisher.class, args);
 	}
-
+	
+	/**
+	 * 
+	 * @return Queue
+	 */
 	@Bean(name ="queueCustomer")
 	Queue queueCustomer() {
 		return new Queue(qCustomer, true);
 	}
-
+	
+	/**
+	 * 
+	 * @return TopicExchange
+	 */
 	@Bean(name="exchangeCustomer")
 	TopicExchange exchangeCustomer() {
 		return new TopicExchange(topicName);
 	}
-
+	
+	/**
+	 * 
+	 * @param queueCustomer
+	 * @param exchangeCustomer
+	 * @return Binding
+	 */
 	@Bean(name="bindingCustomer")
 	Binding bindingCustomer(Queue queueCustomer, TopicExchange exchangeCustomer) {
 		return BindingBuilder.bind(queueCustomer).to(exchangeCustomer).with(qCustomer);
 	}
 	
+	/**
+	 * 
+	 * @return Queue
+	 */
 	@Bean(name="queueShop")
 	Queue queueShop() {
 		return new Queue(qShop, true);
 	}
-
+	
+	/**
+	 * 
+	 * @return TopicExchange
+	 */
 	@Bean(name="exchangeShop")
 	TopicExchange exchangeShop() {
 		return new TopicExchange(topicName);
 	}
-
+	
+	
+	/**
+	 * 
+	 * @param queueShop
+	 * @param exchangeShop
+	 * @return Binding
+	 */
 	@Bean(name="bindingShop")
 	Binding bindingShop(Queue queueShop, TopicExchange exchangeShop) {
 		return BindingBuilder.bind(queueShop).to(exchangeShop).with(qShop);
 	}
-
+	
+	/**
+	 * ConnectionFactory configuration
+	 * @return ConnectionFactory
+	 * @see 
+	 * {@link org.springframework.amqp.rabbit.connection.ConnectionFactory}
+	 * {@link org.springframework.amqp.rabbit.connection.CachingConnectionFactory.CachingConnectionFactory}
+	 */
 	@Bean
 	public ConnectionFactory connectionFactory() {
 		CachingConnectionFactory connectionFactory = new CachingConnectionFactory(brokerUrl);
@@ -82,12 +124,20 @@ public class AppRabbitPublisher {
 		
 		return connectionFactory;
 	}
-
+	
+	/**
+	 * Configuration converter with json
+	 * @return MessageConverter - JsonMessageConverter
+	 */
 	@Bean
 	public MessageConverter jsonMessageConverter() {
-		return new JsonMessageConverter();
+		return new Jackson2JsonMessageConverter();
 	}
-
+	
+	/**
+	 * RabbitTemplate sender for customer
+	 * @return RabbitTemplate
+	 */
 	@Bean(name="rabbitTemplateCustomer")
 	public RabbitTemplate rabbitTemplateCustomer() {
 		RabbitTemplate template = new RabbitTemplate(connectionFactory());
@@ -95,6 +145,11 @@ public class AppRabbitPublisher {
 		template.setMessageConverter(jsonMessageConverter());
 		return template;
 	}
+	
+	/**
+	 * RabbitTemplate sender for shop
+	 * @return RabbitTemplate
+	 */
 	@Bean(name="rabbitTemplateShop")
 	public RabbitTemplate rabbitTemplateShop() {
 		RabbitTemplate template = new RabbitTemplate(connectionFactory());

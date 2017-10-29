@@ -41,9 +41,9 @@ public class MsgProducer {
 	public void sendCustomerMsg(CustomerMsg msg)
 	{
 		try {
-			LOGGER.debug("SENDING MESSAGE >>>>>>");
+			LOGGER.debug("<<<<<< SENDING MESSAGE");
 			rabbitCustomer.convertAndSend(msg);
-			LOGGER.debug(MessageFormat.format("MESSAGE SENDED TO {0} >>>>>>", rabbitCustomer.getRoutingKey()));
+			LOGGER.debug(MessageFormat.format("MESSAGE SENT TO {0} >>>>>>", rabbitCustomer.getRoutingKey()));
 		
 		} catch (AmqpException e) {
 			LOGGER.error("Error sending Customer: ",e);
@@ -58,9 +58,9 @@ public class MsgProducer {
 	public void sendShopMsg(ShopMsg msg)
 	{
 		try {
-			LOGGER.debug("SENDING MESSAGE >>>>>>");
+			LOGGER.debug("<<<<< SENDING MESSAGE");
 			rabbitShop.convertAndSend(msg);
-			LOGGER.debug(MessageFormat.format("MESSAGE SENDED TO {0} >>>>>>", rabbitShop.getRoutingKey()));
+			LOGGER.debug(MessageFormat.format("MESSAGE SENT TO {0} >>>>>>", rabbitShop.getRoutingKey()));
 		} catch (AmqpException e) {
 			LOGGER.error("Error sending Shop: ",e);
 		}

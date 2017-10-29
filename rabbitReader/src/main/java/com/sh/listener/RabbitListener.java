@@ -6,6 +6,7 @@ package com.sh.listener;
  *
  * @param <T> - Message Type Bean
  */
+@FunctionalInterface
 public interface RabbitListener<T> {
 	
 	/**

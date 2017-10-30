@@ -3,6 +3,8 @@ package com.sh.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,8 @@ import com.sh.events.CustomerEvent;
 public class StreamCtrl {
 	
 	private List<SseEmitter> lsEmitters = new ArrayList<SseEmitter>();
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(StreamCtrl.class);
 	
 	@RequestMapping("/stream.action")
 	public SseEmitter stream()
@@ -39,6 +43,7 @@ public class StreamCtrl {
 	        emitter.send(evt.getMsg());
 	      }
 	      catch (Exception e) {
+	    	  LOGGER.error("Error ",e);
 	        deadEmitters.add(emitter);
 	      }
 	    });

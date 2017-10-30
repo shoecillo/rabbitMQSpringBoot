@@ -1,6 +1,6 @@
-## RabbitMQ SpringBoot Example
+## RabbitMQ SpringBoot and SSE Example
 
-Example of how to create reader and writer SpringBoot applications implementing rabbitMQ.  
+Example of how to create reader and writer SpringBoot applications implementing rabbitMQ and SSE(Server-side-events).  
 
 Dependencies:
 
@@ -30,9 +30,9 @@ Dependencies:
 ```
 
 We have 3 modules:
-* [rabbit Publisher](#rabbit-publisher) - write in rabbit queues
-* [rabbit Reader](#rabbit-reader)  - read the rabbit queues
 * [rabbit Bean Messages](#rabbit-bean-messages) - Common Beans shared  between both modules
+* [rabbit Publisher](#rabbit-publisher) - write in rabbit queues
+* [rabbit Reader](#rabbit-reader)  - read the rabbit queues and SSE demo
 
 ## rabbit Bean Messages
 
@@ -199,7 +199,7 @@ The other class is a REST controller with little API for publish messages.
 
 ## rabbit Reader
 
-This module have the functionality of listen messages from rabbitMQ.  
+This module have the functionality of listen messages from rabbitMQ and send event to a website with SSE.  
 Create 2 listeners for 2 different queues but sharing topic exchange.
 
 This is the project structure:
@@ -207,22 +207,65 @@ This is the project structure:
 ```
 │   pom.xml
 ├───src
-    ├───main
-    ├───java
-    │   └───com
-    │       └───sh
-    │           ├───app
-    │           │       AppRabbitReader.java
-    │           │
-    │           └───listener
-    │               │   RabbitListener.java
-    │               │
-    │               └───impl
-    │                       ListenerCustomer.java
-    │                       ListenerShop.java
-    │
-    └───resources
-            application.properties
+│   ├───main
+│   │   ├───java
+│   │   │   └───com
+│   │   │       └───sh
+│   │   │           ├───app
+│   │   │           │       AppRabbitReader.java
+│   │   │           │
+│   │   │           ├───controller
+│   │   │           │       StreamCtrl.java
+│   │   │           │
+│   │   │           ├───events
+│   │   │           │   │   CustomerEvent.java
+│   │   │           │   │
+│   │   │           │   └───publisher
+│   │   │           │           EventsPublisher.java
+│   │   │           │
+│   │   │           └───listener
+│   │   │               │   RabbitListener.java
+│   │   │               │
+│   │   │               └───impl
+│   │   │                       ListenerCustomer.java
+│   │   │                       ListenerShop.java
+│   │   │
+│   │   └───resources
+│   │       │   application.properties
+│   │       │
+│   │       └───static
+│   │           │   index.html
+│   │           │
+│   │           ├───app
+│   │           │       app.js
+│   │           │
+│   │           ├───css
+│   │           │       animations.css
+│   │           │       bootstrap.css
+│   │           │       bootstrap.min.css
+│   │           │       font-awesome.css.map
+│   │           │       font-awesome.min.css
+│   │           │       master.css
+│   │           │
+│   │           ├───fonts
+│   │           │       fontawesome-webfont.eot
+│   │           │       fontawesome-webfont.svg
+│   │           │       fontawesome-webfont.ttf
+│   │           │       fontawesome-webfont.woff
+│   │           │       fontawesome-webfont.woff2
+│   │           │       FontAwesome.otf
+│   │           │
+│   │           ├───img
+│   │           │       banner.svg
+│   │           │
+│   │           └───jslib
+│   │                   angular.min.js
+│   │                   bootstrap.min.js
+│   │                   jquery.min.js
+│   │                   moment-with-locales.min.js
+│   │                   ui-bootstrap-tpls-2.5.0.min.js
+│   │                   ui-bootstrap-tpls.js
+│   │                   underscore-min.js
 ```
 
 For configure the listeners we have to declare the same that in publisher:Queue,Topic exchange,bind and connectionFactory configured for rabbitMQ host.  
@@ -266,7 +309,14 @@ public interface RabbitListener<T> {
 ```
 
 Using generic types, we can implements any bean as Message.  
-Look one of the implementations:
+RabbitListener<CustomerMsg> assign message bean type,in this case CustomerMsg (in the common project).  
+
+## SSE with SpringBoot
+
+SSE or Server-Side-Event is a functionality for create a event listener in client side from server side.  
+Usually we send request to server and wait a response, in this case is reverse operation, we receive a request from server when event occurs,this event in our project is a rabbitMQ message reception.  
+For this purpose we have to use Spring ApplicationEvent events engine,when we read a rabbit message,send a event to controller.  
+Let's to see the reception message implementation for CustomerMsg Bean:  
 
 ```java
 @Component
@@ -274,24 +324,104 @@ public class ListenerCustomer implements RabbitListener<CustomerMsg>{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ListenerCustomer.class);
 
+    @Autowired
+    private EventsPublisher publisher;
+
     @Override
     public void receiveMessage(CustomerMsg message) {
 
     	try {
 			ObjectMapper mapper = new ObjectMapper();
-			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message);
-
+			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message);			
 			LOGGER.debug("Receive Nessage: \n"+json);
+
+			publisher.publishCustomer(message);
 
 		} catch (JsonProcessingException e) {
 			LOGGER.error("Error: ", e);
-		}   
+		}
+
     }
 }
 ```
 
-RabbitListener<CustomerMsg> assign message bean type,in this case CustomerMsg (in the common project).  
-Only show the message received in log.
+EventsPublisher create an ApplicationEvent and publish a object,we get it via autowired, and we publish a object when receive a rabbitMQ message.Method receiveMessage is configured for listen customer messages.  
+
+Go to see Controller:
+
+```java
+@Controller
+public class StreamCtrl {
+
+	private List<SseEmitter> lsEmitters = new ArrayList<SseEmitter>();
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(StreamCtrl.class);
+
+	@RequestMapping("/stream.action")
+	public SseEmitter stream()
+	{
+		SseEmitter emitter = new SseEmitter();
+		lsEmitters.add(emitter);
+
+		emitter.onCompletion(()->lsEmitters.remove(emitter));
+		emitter.onTimeout(()->lsEmitters.remove(emitter));
+
+
+		return emitter;
+	}
+
+	@EventListener({CustomerEvent.class})
+	public void handleCustomerEvt(CustomerEvent evt)
+	{
+	    System.out.println("EVENT RECEIVED: "+evt.getMsg().getCustName());
+	    List<SseEmitter> deadEmitters = new ArrayList<SseEmitter>();
+	    this.lsEmitters.forEach(emitter -> {
+	      try {
+	        emitter.send(evt.getMsg());
+	      }
+	      catch (Exception e) {
+	    	  LOGGER.error("Error ",e);
+	        deadEmitters.add(emitter);
+	      }
+	    });
+
+	    this.lsEmitters.removeAll(deadEmitters);
+	}
+
+}
+```
+
+For listen ApplicationEvents have the @EventListener annotation, if not define parameters,listen all events,but we only want to listen a type of event,then we set the Bean that we want to receive.  
+
+For send a SSE event, the client side have to declare a EventSource object and configure it:
+
+```javascript
+
+const eventSource = new EventSource('/stream.action');
+eventSource.onmessage = e => {
+const msg = JSON.parse(e.data);		
+// do something...
+}
+
+eventSource.onopen = e => console.log('open');
+eventSource.onerror = e => {
+        if (e.readyState == EventSource.CLOSED) {
+	   console.log('close');
+        }
+	else {
+	   console.log(e);
+	}
+};
+
+
+```
+
+EventSource open a connection with '/stream.action',server side,and wait for events,not is a loop,is reactive.  
+[Here Event Source MDN](https://developer.mozilla.org/es/docs/Web/API/EventSource)  
+When declare this object the connection is opened, then in server side,controller '/stream.action' create a new SseEmitter and add it to list.
+When @EventListener receive a rabbit message, send the object via SseEmitter.send(),and parse the Bean into JSON,then we'll receive a JSON object in client side function 'onmessage'.
+
+I used AngularJS 1.6 for client side and create a little application for show in a table all the customer messages.
 
 Only with this steps we can write and read easily working with rabbitMQ.  
 Complete example have 2 queues for show how to configure multiple listeners and multiple writers.
